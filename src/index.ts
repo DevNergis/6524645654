@@ -50,7 +50,7 @@ export default {
 		  return new Response(JSON.stringify({ 
 			"status": "success",
 			"key": key,
-			"download_url": `https://r2-worker.nergis.workers.dev/${key}`
+			"download_url": `https://file.kmhs.info/${key}`
 		   }), { headers: handleCors(request) });
 		case "GET":
 		  const object = await env.MY_BUCKET.get(key);

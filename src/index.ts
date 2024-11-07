@@ -4,6 +4,15 @@ const hasValidHeader = (request, env) => {
   };
 
 //@ts-ignore
+function handleCors(request) {
+	const headers = new Headers();
+	headers.set("Access-Control-Allow-Origin", "*");
+	headers.set("Access-Control-Allow-Methods", "GET, PUT, DELETE, OPTIONS");
+	headers.set("Access-Control-Allow-Headers", "Content-Type, X-Custom-Auth-Key");
+	return headers;
+}
+
+//@ts-ignore
 function authorizeRequest(request, env) {
 	switch (request.method) {
 	  case "PUT":
@@ -35,7 +44,9 @@ export default {
 			"status": "success",
 			"key": key,
 			"download_url": `https://r2-worker.nergis.workers.dev/${key}`
-		   }));
+		   }), {
+			  headers: handleCors(request)
+		   });
 		case "GET":
 		  const object = await env.MY_BUCKET.get(key);
 
@@ -48,7 +59,7 @@ export default {
 		  headers.set("etag", object.httpEtag);
   
 		  return new Response(object.body, {
-			headers,
+			headers: handleCors(request) + headers,
 		  });
 
 		default:

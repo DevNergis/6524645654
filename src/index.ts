@@ -29,43 +29,49 @@ export default {
 	async fetch(request, env) {
 	  const key = crypto.randomUUID();
 
+	  if (request.method === "OPTIONS") {
+		return new Response(null, {
+		  status: 204,
+		  headers: handleCors(request),
+		});
+	  }
+
 	  if (!authorizeRequest(request, env)) {
-		return new Response("Forbidden", { status: 403 });
+		return new Response("Forbidden", { status: 403, headers: handleCors(request) });
 	  }
   
 	  switch (request.method) {
 		case "PUT":
 			const contentLength = request.headers.get("Content-Length");
 			if (contentLength && parseInt(contentLength) > 25 * 1024 * 1024) {
-				return new Response("Payload Too Large", { status: 413 });
+				return new Response("Payload Too Large", { status: 413, headers: handleCors(request) });
 			}
 		  await env.MY_BUCKET.put(key, request.body);
 		  return new Response(JSON.stringify({ 
 			"status": "success",
 			"key": key,
 			"download_url": `https://r2-worker.nergis.workers.dev/${key}`
-		   }), {
-			  headers: handleCors(request)
-		   });
+		   }), { headers: handleCors(request) });
 		case "GET":
 		  const object = await env.MY_BUCKET.get(key);
 
 		  if (object === null) {
-			return new Response("Object Not Found", { status: 404 });
+			return new Response("Object Not Found", { status: 404, headers: handleCors(request) });
 		  }
   
-		  const headers = new Headers();
+		  const headers = handleCors(request);
 		  object.writeHttpMetadata(headers);
 		  headers.set("etag", object.httpEtag);
   
 		  return new Response(object.body, {
-			headers: handleCors(request) + headers,
+			headers: headers,
 		  });
 
 		default:
 		  return new Response("Method Not Allowed", {
 			status: 405,
 			headers: {
+			  ...handleCors(request),
 			  Allow: "PUT, GET",
 			},
 		  });

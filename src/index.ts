@@ -64,7 +64,8 @@ export default {
 		  const headers = handleCors(request);
 		  object.writeHttpMetadata(headers);
 		  headers.set("etag", object.httpEtag);
-  
+		  headers.set("Content-Disposition", `attachment; filename="${object.customMetadata?.fileName || 'unknown'}"`);
+
 		  return new Response(object.body, {
 			headers: headers,
 		  });

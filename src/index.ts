@@ -36,12 +36,12 @@ export default {
 		});
 	  }
 
-	  if (!authorizeRequest(request, env)) {
-		return new Response("Forbidden", { status: 403, headers: handleCors(request) });
-	  }
-  
 	  switch (request.method) {
 		case "PUT":
+			if (!authorizeRequest(request, env)) {
+				return new Response("Forbidden", { status: 403, headers: handleCors(request) });
+			}
+
 			const contentLength = request.headers.get("Content-Length");
 			if (contentLength && parseInt(contentLength) > 25 * 1024 * 1024) {
 				return new Response("Payload Too Large", { status: 413, headers: handleCors(request) });

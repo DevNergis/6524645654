@@ -47,7 +47,8 @@ export default {
 				return new Response("Payload Too Large", { status: 413, headers: handleCors(request) });
 				}
 
-			const fileName = request.formData.name ?? "defaultFileName";
+			//@ts-ignore
+			const fileName = (await request.formData()).get('file').name ?? "defaultFileName";
 			await env.MY_BUCKET.put(key, request.body, { customMetadata: { fileName } });
 			return new Response(JSON.stringify({ 
 				"status": "success",

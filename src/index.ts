@@ -46,9 +46,8 @@ export default {
 			if (contentLength && parseInt(contentLength) > 25 * 1024 * 1024) {
 				return new Response("Payload Too Large", { status: 413, headers: handleCors(request) });
 				}
-			const formData = await request.formData();
-			const file = formData.get("file");
-			const fileName = file instanceof File ? file.name : "defaultFileName";
+
+			const fileName = request.formData.name ?? "defaultFileName";
 			await env.MY_BUCKET.put(key, request.body, { customMetadata: { fileName } });
 			return new Response(JSON.stringify({ 
 				"status": "success",

@@ -45,20 +45,21 @@ export default {
 			const contentLength = request.headers.get("Content-Length");
 			if (contentLength && parseInt(contentLength) > 25 * 1024 * 1024) {
 				return new Response("Payload Too Large", { status: 413, headers: handleCors(request) });
-			}
-		  await env.MY_BUCKET.put(key, request.body);
-		  return new Response(JSON.stringify({ 
-			"status": "success",
-			"key": key,
-			"download_url": `https://file.kmhs.info/${key}`
-		   }), { headers: handleCors(request) });
+				}
+			const fileName = request.body?.values.name ?? "defaultFileName";
+			await env.MY_BUCKET.put(key, request.body, { customMetadata: { fileName } });
+			return new Response(JSON.stringify({ 
+				"status": "success",
+				"key": key,
+				"download_url": `${new URL(request.url).origin}/${key}`
+			}), { headers: handleCors(request) });
 		case "GET":
 		  const object = await env.MY_BUCKET.get(key);
 
 		  if (object === null) {
 			return new Response("Object Not Found", { status: 404, headers: handleCors(request) });
 		  }
-  
+
 		  const headers = handleCors(request);
 		  object.writeHttpMetadata(headers);
 		  headers.set("etag", object.httpEtag);

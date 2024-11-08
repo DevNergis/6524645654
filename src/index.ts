@@ -27,8 +27,6 @@ function authorizeRequest(request, env) {
 
 export default {
 	async fetch(request, env) {
-	  const key = crypto.randomUUID();
-
 	  if (request.method === "OPTIONS") {
 		return new Response(null, {
 		  status: 204,
@@ -41,6 +39,8 @@ export default {
 			if (!authorizeRequest(request, env)) {
 				return new Response("Forbidden", { status: 403, headers: handleCors(request) });
 			}
+
+			const key = crypto.randomUUID();
 
 			const contentLength = request.headers.get("Content-Length");
 			if (contentLength && parseInt(contentLength) > 25 * 1024 * 1024) {
@@ -55,7 +55,7 @@ export default {
 				"download_url": `${new URL(request.url).origin}/${key}`
 			}), { headers: handleCors(request) });
 		case "GET":
-		  const object = await env.MY_BUCKET.get(key);
+		  const object = await env.MY_BUCKET.get(new URL(request.url).pathname.slice(1));
 
 		  if (object === null) {
 			return new Response("Object Not Found", { status: 404, headers: handleCors(request) });
